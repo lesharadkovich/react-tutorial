@@ -57,3 +57,7 @@ ol, ul {
 	margin-top: 10px;
 	margin-left: 30px;
 }
+
+.highlight {
+	background-color: green;
+}
