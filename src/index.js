@@ -31,23 +31,23 @@ class Board extends React.Component {
 	}
 
 	render() {
+		let squares = [];
+		let index = 0;
+
+		for(let i = 0; i < 3; i++) {
+			let sq = [];
+
+			for(let j = 0; j < 3; j++) {
+				sq.push(this.renderSquare(index))
+				index++;
+			}
+
+			squares.push(<div className="board-row">{sq}</div>);
+		}
+
 		return (
 			<div>
-				<div className="board-row">
-					{this.renderSquare(0)}
-					{this.renderSquare(1)}
-					{this.renderSquare(2)}
-				</div>
-				<div className="board-row">
-					{this.renderSquare(3)}
-					{this.renderSquare(4)}
-					{this.renderSquare(5)}
-				</div>
-				<div className="board-row">
-					{this.renderSquare(6)}
-					{this.renderSquare(7)}
-					{this.renderSquare(8)}
-				</div>
+				{squares}
 			</div>
 		);
 	}
@@ -61,16 +61,15 @@ class Game extends React.Component {
 			history: [{
 				squares: Array(9).fill(null)
 			}],
-			stemNumber: 0,
+			stepNumber: 0,
 			xIsNext: true
 		};
 	}
 
 	handleClick(i) {
-		const history = this.state.history.slice(0, this.state.stemNumber + 1);
+		const history = this.state.history.slice(0, this.state.stepNumber + 1);
 		const current = history[history.length - 1];
 		const squares = current.squares.slice();
-		
 		
 		if(calculateWinner(squares) || squares[i]) {
 			return;
@@ -80,33 +79,37 @@ class Game extends React.Component {
 
 		this.setState({
 			history: history.concat([{
-				squares: squares
+				squares: squares,
+				coords: getCoords(i)
 			}]),
-			stemNumber: history.length,
+			stepNumber: history.length,
 			xIsNext: !this.state.xIsNext
 		});
 	}
 
 	jumpTo(step) {
 		this.setState({
-			stemNumber: step,
+			stepNumber: step,
 			xIsNext: (step % 2) === 0
 		});
 	}
 	
 	render() {
 		const history = this.state.history;
-		const current = history[this.state.stemNumber];
+		const current = history[this.state.stepNumber];
 		const winner = calculateWinner(current.squares);
 
 		const moves = history.map((step, move) => {
-			const desc = move ?
-				'Go to move #' + move :
+			let desc = move ?
+				(`Go to move #${move} (${step.coords.x}, ${step.coords.y})`) :
 				'Go to game start';
-			
+
+
+			let isLast = move === this.state.stepNumber ? 'last' : '';
+
 			return (
-				<li key={move}>
-					<button onClick={() => this.jumpTo(move)}>{desc}</button>
+				<li key={move} className={isLast}>
+					<button className={isLast} onClick={() => this.jumpTo(move)}>{desc}</button>
 				</li>
 			)
 		})
@@ -142,6 +145,22 @@ ReactDOM.render(
 	<Game />,
 	document.getElementById('root')
 );
+
+function getCoords(i) {
+	const map = [
+		{x: 1, y: 1},
+		{x: 1, y: 2},
+		{x: 1, y: 3},
+		{x: 2, y: 1},
+		{x: 2, y: 2},
+		{x: 2, y: 3},
+		{x: 3, y: 1},
+		{x: 3, y: 2},
+		{x: 3, y: 3},
+	];
+
+	return map[i];
+}
 
 function calculateWinner(squares) {
 	const lines = [
